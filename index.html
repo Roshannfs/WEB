@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary d-none" id="navbar">
+        <div class="container">
+            <a class="navbar-brand" href="#"><i class="bi bi-person-gear"></i> User Management</a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3" id="user-welcome">Welcome, <span id="current-user"></span></span>
+                <button class="btn btn-outline-light btn-sm" onclick="logout()">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Registration Page -->
+        <div id="registration-page" class="page-content">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white text-center">
+                            <h3><i class="bi bi-person-plus"></i> Create Account</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="registration-form" novalidate>
+                                <div class="mb-3">
+                                    <label for="reg-name" class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="reg-name" required>
+                                    <div class="invalid-feedback">Please provide a valid name.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="reg-email" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="reg-email" required>
+                                    <div class="invalid-feedback">Please provide a valid email address.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="reg-password" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="reg-password" required minlength="8">
+                                    <div class="invalid-feedback">Password must be at least 8 characters long.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="reg-phone" class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="reg-phone" required pattern="[+]?[\d\s-()]+">
+                                    <div class="invalid-feedback">Please provide a valid phone number.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="reg-profession" class="form-label">Profession</label>
+                                    <select class="form-select" id="reg-profession" required>
+                                        <option value="">Choose profession...</option>
+                                        <option value="Software Engineer">Software Engineer</option>
+                                        <option value="Designer">Designer</option>
+                                        <option value="Project Manager">Project Manager</option>
+                                        <option value="Data Scientist">Data Scientist</option>
+                                        <option value="Product Manager">Product Manager</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select a profession.</div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-person-check"></i> Register
+                                </button>
+                            </form>
+                            
+                            <div class="text-center mt-3">
+                                <p>Already have an account? <a href="#" onclick="showPage('login')">Login here</a></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- OTP Verification Page -->
+        <div id="otp-page" class="page-content d-none">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-4">
+                    <div class="card shadow">
+                        <div class="card-header bg-success text-white text-center">
+                            <h3><i class="bi bi-shield-check"></i> Verify Email</h3>
+                        </div>
+                        <div class="card-body text-center">
+                            <p>We've sent a 6-digit verification code to:</p>
+                            <strong id="otp-email" class="text-primary"></strong>
+                            
+                            <form id="otp-form" class="mt-4" novalidate>
+                                <div class="mb-3">
+                                    <label for="otp-code" class="form-label">Enter Verification Code</label>
+                                    <input type="text" class="form-control text-center" id="otp-code" 
+                                           maxlength="6" pattern="[0-9]{6}" required style="font-size: 1.5rem; letter-spacing: 0.5rem;">
+                                    <div class="invalid-feedback">Please enter a valid 6-digit code.</div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-success w-100 mb-3">
+                                    <i class="bi bi-check-circle"></i> Verify Code
+                                </button>
+                            </form>
+                            
+                            <div class="text-muted">
+                                <p>Code expires in: <span id="otp-timer" class="fw-bold text-danger">05:00</span></p>
+                                <button class="btn btn-link p-0" id="resend-otp" onclick="resendOTP()">
+                                    <i class="bi bi-arrow-clockwise"></i> Resend Code
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Page -->
+        <div id="login-page" class="page-content d-none">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-4">
+                    <div class="card shadow">
+                        <div class="card-header bg-primary text-white text-center">
+                            <h3><i class="bi bi-box-arrow-in-right"></i> Login</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="login-form" novalidate>
+                                <div class="mb-3">
+                                    <label for="login-email" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="login-email" required>
+                                    <div class="invalid-feedback">Please provide a valid email address.</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="login-password" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="login-password" required>
+                                    <div class="invalid-feedback">Please provide your password.</div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-box-arrow-in-right"></i> Login
+                                </button>
+                            </form>
+                            
+                            <div class="text-center mt-3">
+                                <p>Don't have an account? <a href="#" onclick="showPage('registration')">Register here</a></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Page -->
+        <div id="dashboard-page" class="page-content d-none">
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2><i class="bi bi-speedometer2"></i> Dashboard</h2>
+                        <button class="btn btn-success" onclick="showAddUserModal()">
+                            <i class="bi bi-person-plus"></i> Add New User
+                        </button>
+                    </div>
+                    
+                    <!-- Users Statistics -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <h5>Total Users</h5>
+                                    <h3 id="total-users">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h5>Verified Users</h5>
+                                    <h3 id="verified-users">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body">
+                                    <h5>Pending Verification</h5>
+                                    <h3 id="pending-users">0</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Users Table -->
+                    <div class="card shadow">
+                        <div class="card-header">
+                            <h5>Users Management</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Phone</th>
+                                            <th>Profession</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="users-table-body">
+                                        <!-- Users will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div class="modal fade" id="editUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-user-form" novalidate>
+                        <input type="hidden" id="edit-user-id">
+                        
+                        <div class="mb-3">
+                            <label for="edit-name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="edit-name" required>
+                            <div class="invalid-feedback">Please provide a valid name.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="edit-email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="edit-email" required>
+                            <div class="invalid-feedback">Please provide a valid email address.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="edit-phone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="edit-phone" required>
+                            <div class="invalid-feedback">Please provide a valid phone number.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="edit-profession" class="form-label">Profession</label>
+                            <select class="form-select" id="edit-profession" required>
+                                <option value="">Choose profession...</option>
+                                <option value="Software Engineer">Software Engineer</option>
+                                <option value="Designer">Designer</option>
+                                <option value="Project Manager">Project Manager</option>
+                                <option value="Data Scientist">Data Scientist</option>
+                                <option value="Product Manager">Product Manager</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a profession.</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="updateUser()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-user-form" novalidate>
+                        <div class="mb-3">
+                            <label for="add-name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="add-name" required>
+                            <div class="invalid-feedback">Please provide a valid name.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="add-email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="add-email" required>
+                            <div class="invalid-feedback">Please provide a valid email address.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="add-password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="add-password" required minlength="8">
+                            <div class="invalid-feedback">Password must be at least 8 characters long.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="add-phone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="add-phone" required>
+                            <div class="invalid-feedback">Please provide a valid phone number.</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="add-profession" class="form-label">Profession</label>
+                            <select class="form-select" id="add-profession" required>
+                                <option value="">Choose profession...</option>
+                                <option value="Software Engineer">Software Engineer</option>
+                                <option value="Designer">Designer</option>
+                                <option value="Project Manager">Project Manager</option>
+                                <option value="Data Scientist">Data Scientist</option>
+                                <option value="Product Manager">Product Manager</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a profession.</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" onclick="addUser()">Add User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this user?</p>
+                    <div class="alert alert-warning">
+                        <strong>Warning:</strong> This action cannot be undone.
+                    </div>
+                    <input type="hidden" id="delete-user-id">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toast-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
