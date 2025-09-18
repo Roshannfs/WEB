@@ -216,7 +216,7 @@ function displayOTPForDemo() {
     }
     
     demoOTPElement.innerHTML = `
-        <strong><i class="bi bi-info-circle"></i> Demo Mode:</strong> 
+        <strong><i class="bi bi-info-circle"></i> Demo Mode : Server is offline use demo mode:</strong> 
         Your verification code is: <code class="fs-4 fw-bold">${currentOTP}</code>
     `;
 }
